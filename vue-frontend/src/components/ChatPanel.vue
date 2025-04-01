@@ -20,12 +20,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, onMounted } from 'vue'
+import { initDB, saveChatMessage, getChatMessages } from '../utils/localDB'
 
 interface ChatMessage {
   id: string;
-  role: 'user' | 'assistant';
   content: string;
+  timestamp: number;
+  sender: 'user' | 'assistant';
+  role?: 'user' | 'assistant';
   referencedNode?: string;
 }
 
@@ -33,6 +36,12 @@ export default defineComponent({
   name: 'ChatPanel',
   setup() {
     const messages = ref<ChatMessage[]>([])
+
+    onMounted(async () => {
+      await initDB()
+      const savedMessages = await getChatMessages()
+      messages.value = savedMessages
+    })
     const inputMessage = ref('')
     const socket = ref<WebSocket | null>(null)
     const isCollapsed = ref(false)
@@ -52,8 +61,10 @@ export default defineComponent({
         const data = JSON.parse(event.data)
         messages.value.push({
           id: Date.now().toString(),
-          role: 'assistant',
           content: data.content,
+          timestamp: Date.now(),
+          sender: 'assistant',
+          role: 'assistant',
           referencedNode: data.referencedNode
         })
       }
@@ -63,16 +74,19 @@ export default defineComponent({
       }
     }
 
-    const sendMessage = () => {
+    const sendMessage = async () => {
       if (!inputMessage.value.trim()) return
       
       const message: ChatMessage = {
         id: Date.now().toString(),
-        role: 'user',
-        content: inputMessage.value
+        content: inputMessage.value,
+        timestamp: Date.now(),
+        sender: 'user',
+        role: 'user'
       }
       
       messages.value.push(message)
+      await saveChatMessage(message)
       
       if (socket.value && socket.value.readyState === WebSocket.OPEN) {
         socket.value.send(JSON.stringify({
