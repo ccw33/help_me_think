@@ -5,3 +5,4 @@ python_backend.egg-info/dependency_links.txt
 python_backend.egg-info/top_level.txt
 tests/__init__.py
 tests/test_chat.py
+tests/test_mindmap.py

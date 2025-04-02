@@ -2,11 +2,13 @@
   <div class="mindmap-container">
     <!-- GoJS Diagram Container -->
     <div ref="diagramDiv" style="width:100%; height:100%; background-color: white;"></div>
+    <button class="save-button" @click="saveMindMap">保存</button>
   </div>
 </template>
 
 <script>
 import { defineComponent, onMounted, ref } from 'vue'
+import axios from 'axios'
 import * as go from 'gojs'
 
 export default defineComponent({
@@ -65,12 +67,38 @@ export default defineComponent({
       ])
     })
 
-    return { diagramDiv }
+    const saveMindMap = async () => {
+      try {
+        const model = diagram.model.toJSON()
+        await axios.post('/api/mindmaps', model)
+        alert('保存成功')
+      } catch (error) {
+        console.error('保存失败:', error)
+        alert('保存失败')
+      }
+    }
+
+    return { diagramDiv, saveMindMap }
   }
 })
 </script>
 
 <style scoped>
+.save-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  padding: 10px 20px;
+  background-color: #00a1ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 1000;
+  font-size: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
 .mindmap-container {
   position: absolute;
   top: 0;

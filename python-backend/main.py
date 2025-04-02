@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import mindmap_router, chat_router
+from python_backend.routers import mindmap_router, chat_router
 import uvicorn
 
 app = FastAPI()

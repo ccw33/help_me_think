@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from services.chat_service import ChatService
+from python_backend.services.chat_service import ChatService
 from typing import Dict, Any
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
