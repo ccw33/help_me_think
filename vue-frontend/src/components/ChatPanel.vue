@@ -51,7 +51,7 @@ export default defineComponent({
     }
 
     const connectWebSocket = () => {
-      socket.value = new WebSocket('ws://localhost:8000/api/chat/ws')
+      socket.value = new WebSocket('ws://localhost:8000/api/chats/ws')
       
       socket.value.onopen = () => {
         console.log('WebSocket连接已建立')
@@ -65,7 +65,7 @@ export default defineComponent({
           timestamp: Date.now(),
           sender: 'assistant',
           role: 'assistant',
-          referencedNode: data.referencedNode
+          referencedNode: data.referenced_node
         })
       }
 
@@ -86,11 +86,13 @@ export default defineComponent({
       }
       
       messages.value.push(message)
-      await saveChatMessage(message)
       
       if (socket.value && socket.value.readyState === WebSocket.OPEN) {
         socket.value.send(JSON.stringify({
-          content: inputMessage.value
+          type: "message",
+          user_id: "current_user", // TODO: 替换为实际用户ID
+          content: inputMessage.value,
+          node_id: null
         }))
       }
       
