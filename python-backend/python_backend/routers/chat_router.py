@@ -1,9 +1,11 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from python_backend.services.chat_service import ChatService
+from python_backend.services.llm_service import LLMService
 from typing import Dict, Any
 
 router = APIRouter(prefix="/api/chats", tags=["chats"])
-service = ChatService()
+llm_service = LLMService()
+service = ChatService(llm_service)
 
 @router.websocket("/ws")
 async def websocket_chat(websocket: WebSocket):

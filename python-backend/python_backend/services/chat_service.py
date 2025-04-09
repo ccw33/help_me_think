@@ -2,30 +2,40 @@ from python_backend.app.database import get_postgres_conn
 from typing import Dict, Any, Optional
 from datetime import datetime
 import json
+from python_backend.services.llm_service import LLMService
 
 class ChatService:
-    def __init__(self):
+    def __init__(self, llm_service: LLMService):
         self.active_connections = {}
+        self.llm_service = llm_service
 
-    async def handle_message(self, user_id: str, message: str, referenced_node: Optional[str] = None) -> Dict[str, Any]:
+    async def handle_message(self, user_id: str, message: str, node_reference: Optional[str] = None) -> Dict[str, Any]:
         async with get_postgres_conn() as conn:
-            # 保存消息到数据库
+            # 保存用户消息到数据库
             await conn.execute(
-                """INSERT INTO chats(user_id, message, node_reference, created_at)
-                VALUES($1, $2, $3, $4)""",
-                user_id, message, referenced_node, datetime.now()
+                """INSERT INTO chats(user_id, message, node_reference, created_at, is_ai)
+                VALUES($1, $2, $3, $4, $5)""",
+                user_id, message, node_reference, datetime.now(), False
             )
             
-            # 生成LLM回复 (TODO: 实际集成LLM)
-            ai_response = f"已收到您的消息: {message}"
-            if referenced_node:
-                ai_response += f"\n(关联节点: {referenced_node})"
+            # 生成LLM回复
+            messages = [{
+                "role": "user",
+                "content": message
+            }]
             
-            # 保存AI回复
+            try:
+                ai_response = await self.llm_service.generate_response(messages)
+                if node_reference:
+                    ai_response += f"\n(关联节点: {node_reference})"
+            except Exception as e:
+                ai_response = f"生成回复时出错: {str(e)}"
+            
+            # 保存AI回复到数据库
             await conn.execute(
-                """INSERT INTO chats(user_id, message, is_ai, created_at)
-                VALUES($1, $2, $3, $4)""",
-                user_id, ai_response, True, datetime.now()
+                """INSERT INTO chats(user_id, message, node_reference, created_at, is_ai)
+                VALUES($1, $2, $3, $4, $5)""",
+                user_id, ai_response, node_reference, datetime.now(), True
             )
             
             return {

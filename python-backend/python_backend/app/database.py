@@ -1,13 +1,12 @@
 from pymongo import MongoClient
 import asyncpg
-import atexit
+import os
 from typing import AsyncGenerator
 from contextlib import asynccontextmanager
 
 # MongoDB配置
-MONGO_URI = "mongodb://root:example@localhost:27017"
+MONGO_URI = os.getenv("MONGODB_URL", "mongodb://root:example@localhost:27017")
 mongo_client = MongoClient(MONGO_URI)
-atexit.register(mongo_client.close)
 mongo_db = mongo_client["think_assistant"]
 
 # PostgreSQL配置

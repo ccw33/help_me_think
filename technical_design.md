@@ -43,6 +43,20 @@ graph TD
   - 导图数据: MongoDB (文档存储)
   - 聊天记录: PostgreSQL (关系型)
 
+#### 步骤：
+1. 本地存储方案：
+- 使用IndexedDB存储聊天记录和临时导图数据
+- 实现自动同步机制，当网络恢复时将本地数据同步到云端
+2. 云端存储方案：
+- 导图数据使用MongoDB（文档型数据库适合存储JSON格式的导图数据）
+- 聊天记录使用PostgreSQL（关系型数据库适合结构化聊天数据）
+3. Docker配置：
+- 创建docker-compose.yml文件配置MongoDB和PostgreSQL服务
+- 设置数据卷持久化存储数据库数据
+4. 后端API：
+- 添加导图数据存储/读取接口（MongoDB）
+- 添加聊天记录存储/读取接口（PostgreSQL）
+
 ## 3. 数据模型
 
 ### 3.1 思维导图节点
