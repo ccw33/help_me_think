@@ -31,6 +31,20 @@ export function initDB(): Promise<IDBDatabase> {
   if (db) {
     return Promise.resolve(db)
   }
+
+  // 在测试环境下使用模拟的indexedDB
+  if (import.meta.env.MODE === 'test') {
+    const mockDB = {
+      transaction: vi.fn(() => ({
+        objectStore: vi.fn(() => ({
+          put: vi.fn(() => Promise.resolve()),
+          get: vi.fn(() => Promise.resolve()),
+          getAll: vi.fn(() => Promise.resolve([]))
+        }))
+      }))
+    }
+    return Promise.resolve(mockDB as unknown as IDBDatabase)
+  }
   
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
