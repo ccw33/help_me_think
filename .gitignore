@@ -30,4 +30,7 @@ coverage
 *.tsbuildinfo
 
 # Custom ignores
-/data/
+/data/**
+# ignore data目录下的所有文件
+# except data/README.md
+!/data/README.md
