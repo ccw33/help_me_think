@@ -1,7 +1,7 @@
 <template>
-  <div class="mindmap-container">
+  <div class="mindmap-container" data-testid="mindmap-container">
     <!-- GoJS Diagram Container -->
-    <div ref="diagramDiv" style="width:100%; height:100%; background-color: white;"></div>
+    <div ref="diagramDiv" style="width:100%; height:100%; background-color: white;" data-testid="diagram-div"></div>
     <button class="save-button" @click="saveMindMap">保存</button>
   </div>
 </template>
@@ -13,7 +13,8 @@ import * as go from 'gojs'
 
 export default defineComponent({
   name: 'MindMap',
-  setup() {
+  emits: ['save'],
+  setup(props, { emit }) {
     const diagramDiv = ref(null)
     
     onMounted(() => {
@@ -67,18 +68,26 @@ export default defineComponent({
       ])
     })
 
+    const diagram = ref<go.Diagram | null>(null)
+
     const saveMindMap = async () => {
+      if (!diagram.value) return
+      
       try {
-        const model = diagram.model.toJSON()
-        await axios.post('/api/mindmaps', model)
+        const model = diagram.value.model.toJSON()
+        // 添加emit触发保存事件
+        emit('save', model)
+        const response = await axios.post('/api/mindmaps', model)
         alert('保存成功')
+        return response
       } catch (error) {
         console.error('保存失败:', error)
         alert('保存失败')
+        throw error
       }
     }
 
-    return { diagramDiv, saveMindMap }
+    return { diagramDiv, saveMindMap, diagram }
   }
 })
 </script>

@@ -34,7 +34,7 @@ interface ChatMessage {
 
 export default defineComponent({
   name: 'ChatPanel',
-  setup() {
+  setup(_, { emit }) {
     const messages = ref<ChatMessage[]>([])
 
     onMounted(async () => {
@@ -74,30 +74,31 @@ export default defineComponent({
       }
     }
 
-    const sendMessage = async () => {
-      if (!inputMessage.value.trim()) return
-      
-      const message: ChatMessage = {
-        id: Date.now().toString(),
-        content: inputMessage.value,
-        timestamp: Date.now(),
-        sender: 'user',
-        role: 'user'
-      }
-      
-      messages.value.push(message)
-      
-      if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-        socket.value.send(JSON.stringify({
-          type: "message",
-          user_id: "current_user", // TODO: 替换为实际用户ID
-          content: inputMessage.value,
-          node_id: null
-        }))
-      }
-      
-      inputMessage.value = ''
+  const sendMessage = async () => {
+    if (!inputMessage.value.trim()) return
+    
+    const message: ChatMessage = {
+      id: Date.now().toString(),
+      content: inputMessage.value,
+      timestamp: Date.now(),
+      sender: 'user',
+      role: 'user'
     }
+    
+    messages.value.push(message)
+    
+    if (socket.value && socket.value.readyState === WebSocket.OPEN) {
+      socket.value.send(JSON.stringify({
+        type: "message",
+        user_id: "current_user", // TODO: 替换为实际用户ID
+        content: inputMessage.value,
+        node_id: null
+      }))
+    }
+    
+    inputMessage.value = ''
+    emit('send', message)
+  }
 
     connectWebSocket()
 
